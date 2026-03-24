@@ -1,0 +1,78 @@
+
+// === React PWA Todo App === // To use: place this in a React project (e.g., Vite / CRA) // Also create: public/manifest.json and public/sw.js (included below)
+
+import React, { useState, useEffect } from "react";
+
+export default function TodoApp() { const defaultTasks = [ "Wake up early and make your bed.", "Drink a glass of water.", "Make time for a healthy breakfast.", "Brew a cup of fresh coffee.", "Go outside and enjoy the sunlight.", ];
+
+const [tasks, setTasks] = useState([]);
+
+useEffect(() => { const saved = localStorage.getItem("morningTasks"); if (saved) { setTasks(JSON.parse(saved)); } else { setTasks(defaultTasks.map(text => ({ text, done: false }))); } }, []);
+
+useEffect(() => { localStorage.setItem("morningTasks", JSON.stringify(tasks)); }, [tasks]);
+
+const toggleTask = (index) => { const updated = [...tasks]; updated[index].done = !updated[index].done; setTasks(updated); };
+
+const updateText = (index, value) => { const updated = [...tasks]; updated[index].text = value; setTasks(updated); };
+
+const addTask = () => { setTasks([...tasks, { text: "New task...", done: false }]); };
+
+return ( <div className="min-h-screen flex items-center justify-center bg-[#efe4d1] p-4"> <div className="w-full max-w-md rounded-2xl overflow-hidden shadow-lg bg-white">
+
+<div className="bg-[#f2b54b] p-3 flex justify-end gap-2">
+      <div className="w-4 h-4 border border-black text-xs text-center">—</div>
+      <div className="w-4 h-4 border border-black text-xs text-center">□</div>
+      <div className="w-4 h-4 border border-black text-xs text-center">×</div>
+    </div>
+
+    <div className="p-4 text-xl font-bold text-[#8a5a1f] border-b">
+      Morning routine checklist
+    </div>
+
+    <div className="bg-gray-100">
+      {tasks.map((task, i) => (
+        <div key={i} className="flex items-center justify-between px-4 py-3 border-b">
+          <input
+            className="bg-transparent w-3/4 outline-none"
+            value={task.text}
+            onChange={(e) => updateText(i, e.target.value)}
+          />
+
+          <div
+            onClick={() => toggleTask(i)}
+            className={`w-11 h-6 rounded-full cursor-pointer transition ${
+              task.done ? "bg-[#a67c52]" : "bg-[#d6b89b]"
+            }`}
+          >
+            <div
+              className={`w-5 h-5 bg-white rounded-full mt-0.5 ml-0.5 transition transform ${
+                task.done ? "translate-x-5" : ""
+              }`}
+            />
+          </div>
+        </div>
+      ))}
+    </div>
+
+    <div
+      onClick={addTask}
+      className="bg-[#f2b54b] text-center p-3 font-bold cursor-pointer"
+    >
+      + Add Task
+    </div>
+  </div>
+</div>
+
+); }
+
+// === SERVICE WORKER REGISTRATION (add to index.js) === // if ('serviceWorker' in navigator) { //   window.addEventListener('load', () => { //     navigator.serviceWorker.register('/sw.js'); //   }); // }
+
+// === public/manifest.json === // { //   "name": "Morning Routine", //   "short_name": "Routine", //   "start_url": ".", //   "display": "standalone", //   "background_color": "#efe4d1", //   "theme_color": "#f2b54b", //   "icons": [ //     { //       "src": "icon-192.png", //       "sizes": "192x192", //       "type": "image/png" //     }, //     { //       "src": "icon-512.png", //       "sizes": "512x512", //       "type": "image/png" //     } //   ] // }
+
+// === public/sw.js === // const CACHE_NAME = 'todo-app-v1'; // const urlsToCache = ['/'];
+
+// self.addEventListener('install', event => { //   event.waitUntil( //     caches.open(CACHE_NAME) //       .then(cache => cache.addAll(urlsToCache)) //   ); // });
+
+// self.addEventListener('fetch', event => { //   event.respondWith( //     caches.match(event.request) //       .then(response => response || fetch(event.request)) //   ); // });
+
+// === HOW TO INSTALL === // 1. Run your React app // 2. Open in Chrome // 3. Click "Add to Home Screen" // 4. App installs like a native mobile app 🎉
